@@ -1,7 +1,8 @@
 import './migrate'
 import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, Menu, nativeTheme, shell, systemPreferences, Tray } from 'electron'
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { AppState, DictEntry, HistoryEntry, Phase, Settings } from '../shared/types'
 import { cleanText, testKey, warmClaude } from './cleanup'
 import type { AppContext } from './context'
@@ -15,7 +16,7 @@ import { accessibilityStatus, micStatus, openMicSettings, requestAccessibility, 
 import { clearRecordings } from './recordings'
 import * as store from './store'
 import { transcribe, transcribePartial, warmUp } from './stt'
-import { appIcon, createHub, createOverlay, nativeGlass, trayIcon } from './windows'
+import { appIcon, createHub, createOverlay, nativeGlass, placeOverlay, trayIcon } from './windows'
 
 const mac = process.platform === 'darwin'
 const OPENABLE = new Set(['https://console.anthropic.com/settings/keys'])
@@ -23,14 +24,17 @@ const selftest = process.argv.find((a) => a.startsWith('--selftest='))?.split('=
 const selftestClean = process.argv.find((a) => a.startsWith('--selftest-clean='))?.slice('--selftest-clean='.length)
 const selftestLive = process.argv.find((a) => a.startsWith('--selftest-live='))?.split('=')[1]
 const selftestRelease = process.argv.find((a) => a.startsWith('--selftest-release='))?.split('=')[1]
+const screenshots = process.argv.find((a) => a.startsWith('--screenshots='))?.split('=')[1]
 
-if (!selftest && !selftestClean && !selftestLive && !selftestRelease && !app.requestSingleInstanceLock()) app.quit()
+if (!selftest && !selftestClean && !selftestLive && !selftestRelease && !screenshots && !app.requestSingleInstanceLock()) app.quit()
 
 let hub: BrowserWindow | null = null
 let overlay: BrowserWindow
 let tray: Tray | null = null
 let quitting = false
 let hotkey: AppState['setup']['hotkey'] = { ok: true }
+/** Screenshots show the app as it looks once set up, whatever this Mac has granted so far. */
+let asSetUp = false
 
 const GLOBE: Record<string, AppState['setup']['globeKey']> = { '0': 'nothing', '1': 'input-source', '2': 'emoji', '3': 'dictation' }
 let globeCache: { at: number; value: AppState['setup']['globeKey'] } = { at: 0, value: 'unknown' }
@@ -56,8 +60,8 @@ function state(): AppState {
       platform: process.platform,
       glass: nativeGlass,
       systemReducedMotion: systemPreferences.getAnimationSettings().prefersReducedMotion,
-      mic: micStatus(),
-      accessibility: accessibilityStatus(),
+      mic: asSetUp ? 'granted' : micStatus(),
+      accessibility: asSetUp ? 'granted' : accessibilityStatus(),
       model: modelStatus(),
       localModel: llmStatus(),
       claude: { configured: !!key, source, keyHint: key ? `…${key.slice(-4)}` : '' },
@@ -285,6 +289,52 @@ async function runSelftest(paths: string): Promise<void> {
   }
 }
 
+/**
+ * `SPARK_DATA_DIR=<demo data> electron . --screenshots=<dir>` saves PNGs of every hub page in light
+ * and dark, and of the bubble while it writes (no microphone involved), for the README and the blog.
+ * The demo data folder keeps your own history out of the pictures.
+ */
+async function runScreenshots(dir: string): Promise<void> {
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  const save = async (win: BrowserWindow, name: string) => {
+    writeFileSync(join(dir, `${name}.png`), (await win.webContents.capturePage()).toPNG())
+    console.log(`[screenshots] ${name}.png`)
+  }
+  asSetUp = true
+  try {
+    mkdirSync(dir, { recursive: true })
+    registerIpc()
+    overlay = createOverlay()
+    openHub()
+    await new Promise<void>((r) => hub!.once('ready-to-show', () => r()))
+    await wait(1500)
+    for (const theme of ['light', 'dark'] as const) {
+      store.updateSettings({ theme })
+      nativeTheme.themeSource = theme
+      broadcast()
+      for (const [i, page] of ['home', 'history', 'dictionary', 'settings'].entries()) {
+        await hub!.webContents.executeJavaScript(`document.querySelectorAll('.nav-item')[${i}].click()`)
+        await wait(1600)
+        await save(hub!, `hub-${page}-${theme}`)
+      }
+      // Settings again, at the choice between Gemma on the Mac and Claude.
+      await hub!.webContents.executeJavaScript(`document.getElementById('cleanup-title').scrollIntoView({ block: 'start' })`)
+      await wait(600)
+      await save(hub!, `hub-cleanup-${theme}`)
+    }
+    placeOverlay(overlay)
+    overlay.showInactive()
+    overlay.webContents.send('overlay:command', { type: 'view', view: { phase: 'cleaning' } })
+    overlay.webContents.send('overlay:command', { type: 'partial', text: 'phích cái bắp ở file index chấm ts rồi commit và tút lên bờ ran may nhé' })
+    await wait(1200)
+    await save(overlay, 'bubble')
+    app.exit(0)
+  } catch (e) {
+    console.error('[screenshots] FAILED', e)
+    app.exit(1)
+  }
+}
+
 app.on('second-instance', () => openHub())
 app.on('activate', () => openHub())
 app.on('window-all-closed', () => {
@@ -385,6 +435,7 @@ app.whenReady().then(async () => {
   if (selftestClean) return runCleanSelftest(selftestClean)
   if (selftestLive) return runLiveSelftest(selftestLive)
   if (selftestRelease) return runReleaseSelftest(selftestRelease)
+  if (screenshots) return runScreenshots(screenshots)
   nativeTheme.themeSource = store.getSettings().theme
   // The on-device model takes longest to load (~3 s), so it starts first.
   if (wantsLocal(store.getSettings().cleanup)) void warmLocal()

@@ -26,7 +26,8 @@ function SetupList({ state, setState, go }: Props) {
   const blocking = blockers(setup)
   const primary = (id: string) => (blocking[0] === id ? 'btn primary' : 'btn')
   const { model, mic, accessibility, claude } = setup
-  const devName = mac ? ' (hiện là “Electron” khi đang phát triển)' : ''
+  // In development the permission belongs to the Electron binary, not to Spark.
+  const devName = mac && import.meta.env.DEV ? ' (hiện là “Electron” khi đang phát triển)' : ''
   const fallback = claude.configured ? 'Claude' : 'cách dọn cơ bản'
 
   return (

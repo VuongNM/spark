@@ -10,9 +10,13 @@ import { join } from 'node:path'
  */
 const KEEP = ['settings.json', 'history.json', 'dictionary.json', 'recordings', 'models']
 
+// SPARK_DATA_DIR runs Spark on another data folder, e.g. demo data for screenshots.
+const custom = process.env.SPARK_DATA_DIR
+if (custom) app.setPath('userData', custom)
+
 const from = join(app.getPath('appData'), 'mike')
 const to = app.getPath('userData')
-if (from !== to && existsSync(from) && !existsSync(join(to, 'settings.json'))) {
+if (!custom && from !== to && existsSync(from) && !existsSync(join(to, 'settings.json'))) {
   mkdirSync(to, { recursive: true })
   for (const name of KEEP) {
     if (!existsSync(join(from, name)) || existsSync(join(to, name))) continue

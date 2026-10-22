@@ -1,7 +1,7 @@
 {
   "name": "spark",
   "productName": "Spark",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Voice typing for Vietnamese developers: hold fn, talk, let go to paste.",
   "author": "Vuong Nguyen",
   "license": "MIT",
