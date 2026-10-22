@@ -318,7 +318,13 @@ async function runScreenshots(dir: string): Promise<void> {
         await save(hub!, `hub-${page}-${theme}`)
       }
       // Settings again, at the choice between Gemma on the Mac and Claude.
-      await hub!.webContents.executeJavaScript(`document.getElementById('cleanup-title').scrollIntoView({ block: 'start' })`)
+      await hub!.webContents.executeJavaScript(`{
+        const title = document.getElementById('cleanup-title')
+        title.scrollIntoView({ block: 'start' })
+        let box = title.parentElement
+        while (box && box.scrollHeight <= box.clientHeight) box = box.parentElement
+        ;(box ?? document.scrollingElement).scrollBy(0, -120)
+      }`)
       await wait(600)
       await save(hub!, `hub-cleanup-${theme}`)
     }

@@ -1,5 +1,7 @@
 # Spark
 
+![Spark: hold fn, talk, let go](docs/spark.jpg)
+
 Voice typing for Vietnamese developers. Hold **fn**, talk in Vietnamese with English words mixed in, let go, and the cleaned-up sentence is pasted where your cursor is: Cursor, VS Code, Terminal, Slack, anything.
 
 **Install and docs (Vietnamese): https://vuongnm.github.io/spark/**
