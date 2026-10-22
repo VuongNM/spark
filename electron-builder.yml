@@ -1,0 +1,46 @@
+appId: vn.vuongnm.spark
+productName: Spark
+directories:
+  buildResources: build
+  output: dist
+files:
+  - out/**
+  - resources/icon.png
+  - package.json
+  - '!**/*.map'
+  # CUDA builds of llama.cpp add hundreds of MB; Windows uses the Vulkan or CPU build instead.
+  - '!node_modules/@node-llama-cpp/*cuda*/**'
+  # llama.cpp's source, only needed to compile it; Spark always uses the prebuilt binaries.
+  - '!node_modules/node-llama-cpp/llama/gitRelease.bundle'
+# Native modules load .node files and dylibs from disk, so they can't live inside the asar archive.
+asarUnpack:
+  - node_modules/sherpa-onnx-*/**
+  - node_modules/uiohook-napi/**
+  - node_modules/node-llama-cpp/**
+  - node_modules/@node-llama-cpp/**
+npmRebuild: false
+mac:
+  # A plain .app; scripts/sign-mac.sh signs it and scripts/release-mac.sh wraps it in a zip and a dmg.
+  target:
+    - target: dir
+      arch: [arm64]
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  extraResources:
+    - from: resources/bin
+      to: bin
+  extendInfo:
+    NSMicrophoneUsageDescription: Spark chỉ nghe khi bạn giữ phím đọc, rồi chuyển lời bạn nói thành chữ.
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: resources/icon.png
+  artifactName: Spark-win-x64.${ext}
+nsis:
+  # One click, per user, no admin prompt: installs to %LOCALAPPDATA%\Programs\Spark.
+  oneClick: true
+  perMachine: false
