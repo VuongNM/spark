@@ -80,7 +80,7 @@ const SHORT_PHRASE_WORDS = 4
  * Cleans a transcript with the chosen engine. Every model result must pass two checks (it still
  * says what was said; every number in it was spoken) or it isn't used.
  * - claude: Claude, except very short phrases, which Gemma does when it's loaded; Gemma also
- *   steps in when Claude can't be reached.
+ *   steps in when Claude can't be reached or there is no key yet.
  * - local: Gemma, except self-corrections, which need Claude; Claude backs it up when a key is set.
  * - basic: offline rules only. Everything falls back to basic as a last resort.
  */
@@ -127,7 +127,15 @@ export async function cleanText(
     if (opts.mode === 'claude') localIssue = undefined // a short phrase simply goes to Claude
   }
 
-  if (!opts.key) return opts.mode === 'local' ? basic(localIssue, rejected) : basic('no-key')
+  if (!opts.key) {
+    if (opts.mode === 'local') return basic(localIssue, rejected)
+    // No key yet: Gemma, when it's on this Mac, still beats the basic rules ("cơ mít" → "commit").
+    if (!localFirst) {
+      const text = await viaLocal()
+      if (text) return done({ text, cleanedBy: 'local', fallbackReason: 'no-key' })
+    }
+    return basic('no-key', rejected)
+  }
   try {
     const text = await cleanWithClaude(content, opts.key, opts.model)
     if (!passes(text)) return basic('diverged', text)

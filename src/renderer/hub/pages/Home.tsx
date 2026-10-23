@@ -120,7 +120,7 @@ function SetupList({ state, setState, go }: Props) {
         </SetupRow>
       ) : (
         <SetupRow tone="off" title="Dọn chữ bằng Claude" action={<button className="btn" onClick={() => go('settings', 'apikey')}>Thêm khoá API</button>}>
-          Claude thêm dấu câu, chữ số, danh sách và sửa tên riêng. Chưa có khoá thì Spark chỉ dọn cơ bản.
+          Claude thêm dấu câu, chữ số, danh sách và sửa tên riêng. Chưa có khoá thì {setup.localModel.state === 'ready' ? 'Gemma 4 trên máy dọn thay' : 'Spark chỉ dọn cơ bản'}.
         </SetupRow>
       )}
     </div>

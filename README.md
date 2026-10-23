@@ -14,7 +14,7 @@ Apple Silicon Macs. A Windows build (hold Right Ctrl) is attached to each releas
 
 ## How it works
 
-1. **Listen.** While you hold the key, the recording bubble streams audio to the main process, which re-reads the last 12 s every 300 ms with a 30M-parameter Vietnamese [Zipformer](https://github.com/k2-fsa/sherpa-onnx) (sherpa-onnx, CPU) so you see your words live. A small English model (Moonshine tiny) listens in parallel to catch English words the Vietnamese model can't spell.
+1. **Listen.** While you hold the key, the recording bubble streams audio to the main process, which re-reads the last 12 s every 300 ms with a 30M-parameter Vietnamese [Zipformer](https://github.com/k2-fsa/sherpa-onnx) (sherpa-onnx, CPU) so you see your words live. Hotwords nudge it toward the English spelling of about 30 common developer words (commit, deploy, staging…) and your dictionary words. A small English model (Moonshine tiny) listens in parallel to catch English words the Vietnamese model can't spell.
 2. **Clean up.** The transcript goes to Gemma 4 E2B on-device (node-llama-cpp, Metal) or Claude Haiku with your own API key. The prompt is in [`src/main/prompt.ts`](src/main/prompt.ts). Cleanup starts at pauses and at release, so the result is usually ready about 1 s after you let go.
 3. **Check.** `checkDivergence` and `unspokenNumbers` in [`src/main/format.ts`](src/main/format.ts) reject output that adds words or changes numbers; Spark then falls back to Claude or to basic punctuation.
 4. **Paste.** The text goes on the clipboard, Spark sends ⌘V (Ctrl+V), then restores your clipboard.
