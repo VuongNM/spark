@@ -2,7 +2,7 @@
   "name": "spark",
   "productName": "Spark",
   "version": "0.1.2",
-  "description": "Voice typing for Vietnamese developers: hold fn, talk, let go to paste.",
+  "description": "Gõ bằng giọng nói tiếng Việt cho dân code: giữ fn, nói, thả ra là chữ được dán.",
   "author": "Vuong Nguyen",
   "license": "MIT",
   "homepage": "https://vuongnm.github.io/spark/",
