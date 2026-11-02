@@ -76,7 +76,7 @@ export function loadApiKey(): { key: string | null; source: 'saved' | 'env' | 'n
     try {
       return { key: safeStorage.decryptString(Buffer.from(settingsFile.apiKeyEnc, 'base64')), source: 'saved' }
     } catch {
-      return { key: null, source: 'none' }
+      // Unreadable here (e.g. a self-test without the keychain): fall back to the environment.
     }
   }
   if (process.env.ANTHROPIC_API_KEY) return { key: process.env.ANTHROPIC_API_KEY, source: 'env' }

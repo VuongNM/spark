@@ -26,7 +26,16 @@ const selftestLive = process.argv.find((a) => a.startsWith('--selftest-live='))?
 const selftestRelease = process.argv.find((a) => a.startsWith('--selftest-release='))?.split('=')[1]
 const screenshots = process.argv.find((a) => a.startsWith('--screenshots='))?.split('=')[1]
 
-if (!selftest && !selftestClean && !selftestLive && !selftestRelease && !screenshots && !app.requestSingleInstanceLock()) app.quit()
+const testRun = !!(selftest || selftestClean || selftestLive || selftestRelease || screenshots)
+
+if (!testRun && !app.requestSingleInstanceLock()) app.quit()
+// Test runs never touch the login keychain. Only the signed Spark.app may read its "Spark Safe Storage"
+// item, so the dev Electron binary (or a bundle swapped while running) makes macOS ask for your
+// password. A saved Claude key can't be read here; self-tests use ANTHROPIC_API_KEY instead.
+if (testRun && mac) app.commandLine.appendSwitch('use-mock-keychain')
+// When other windows cover the hub, macOS reports it occluded and Chromium stops painting it, so
+// capturePage would return an old frame. Screenshot mode keeps it painting.
+if (screenshots) app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
 
 let hub: BrowserWindow | null = null
 let overlay: BrowserWindow
@@ -297,6 +306,14 @@ async function runSelftest(paths: string): Promise<void> {
 async function runScreenshots(dir: string): Promise<void> {
   const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
   const save = async (win: BrowserWindow, name: string) => {
+    // A hidden page isn't painted, so capturing it saves the last frame it drew. macOS hides the hub for
+    // about a second when another app takes focus; wait until it's visible and has drawn a new frame.
+    const fresh = await win.webContents.executeJavaScript(`new Promise((ok) => {
+      setTimeout(() => ok(false), 8000)
+      const check = () => document.visibilityState === 'visible' ? requestAnimationFrame(() => requestAnimationFrame(() => ok(true))) : setTimeout(check, 100)
+      check()
+    })`)
+    if (!fresh) throw new Error(`${name}: the window stayed hidden, so the picture would be stale`)
     writeFileSync(join(dir, `${name}.png`), (await win.webContents.capturePage()).toPNG())
     console.log(`[screenshots] ${name}.png`)
   }
