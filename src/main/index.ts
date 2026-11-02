@@ -110,14 +110,14 @@ async function applyHotkeys(): Promise<void> {
   } catch {
     ok = false
   }
-  hotkey = ok ? { ok: true } : { ok: false, reason: 'taken', error: `Ứng dụng khác đang dùng ${label}. Chọn phím tắt khác.` }
+  hotkey = ok ? { ok: true } : { ok: false, reason: 'taken', error: `App khác đang dùng ${label}. Chọn hotkey khác.` }
   const handlers = {
     down: () => holdInput({ type: 'down' }),
     up: () => holdInput({ type: 'up' }),
     chord: (keycode: number) => holdInput({ type: 'chord', keycode }),
   }
   const holdStatus = await setHoldKey(s.mode === 'hold' ? s.holdKey : null, handlers)
-  if (holdStatus === 'permission') hotkey = { ok: false, reason: 'permission', error: `Muốn giữ ${holdKeyLabel(s.holdKey, process.platform)} để nói, bạn cần bật Tự dán (Trợ năng).` }
+  if (holdStatus === 'permission') hotkey = { ok: false, reason: 'permission', error: `Muốn giữ ${holdKeyLabel(s.holdKey, process.platform)} để nói, cần bật Accessibility cho Spark.` }
   else if (holdStatus === 'unavailable') hotkey = { ok: false, reason: 'unavailable', error: `Spark không bắt được phím ${holdKeyLabel(s.holdKey, process.platform)}. Chọn phím khác trong Cài đặt.` }
   updateTray(currentPhase())
   broadcast()
@@ -128,7 +128,7 @@ function updateTray(phase: Phase): void {
   const s = store.getSettings()
   const recording = phase === 'recording'
   tray.setImage(trayIcon(recording))
-  tray.setToolTip(recording ? 'Spark — listening' : 'Spark')
+  tray.setToolTip(recording ? 'Spark · đang nghe' : 'Spark')
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: recording ? 'Dừng đọc' : 'Bắt đầu đọc', accelerator: s.shortcut, click: toggle },
@@ -173,7 +173,7 @@ function registerIpc(): void {
   })
   ipcMain.handle('apikey:test', (_e, key?: string) => {
     const k = key?.trim() || store.loadApiKey().key
-    if (!k) return { ok: false, message: 'Dán khoá vào trước đã.' }
+    if (!k) return { ok: false, message: 'Paste API key vào trước đã.' }
     return testKey(k, store.getSettings().claudeModel)
   })
   ipcMain.handle('history:list', (_e, q: string) => store.listHistory(q))

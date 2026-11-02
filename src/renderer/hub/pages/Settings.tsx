@@ -34,9 +34,9 @@ export function Settings({ state, setState }: Props) {
           <div className="card list">
             <Toggle label="Phát tiếng báo khi bắt đầu và dừng thu" checked={settings.sounds} onChange={(v) => update({ sounds: v })} />
             <Toggle label="Lưu lịch sử trên máy này" checked={settings.keepHistory} onChange={(v) => update({ keepHistory: v })} />
-            <Toggle label="Trả lại nội dung đã copy sau khi dán" checked={settings.restoreClipboard} onChange={(v) => update({ restoreClipboard: v })} />
+            <Toggle label="Trả lại nội dung clipboard cũ sau khi paste" checked={settings.restoreClipboard} onChange={(v) => update({ restoreClipboard: v })} />
             <Toggle
-              label="Giữ 20 bản ghi âm gần nhất trên máy để dò lỗi nhận giọng. Tắt đi thì Spark xoá hết."
+              label="Giữ 20 bản ghi âm gần nhất trên máy để debug STT. Tắt đi thì Spark xoá hết."
               checked={settings.keepRecordings}
               onChange={(v) => update({ keepRecordings: v })}
             />
@@ -45,16 +45,16 @@ export function Settings({ state, setState }: Props) {
               <span>Giao diện</span>
               <select className="select" value={settings.theme} onChange={(e) => update({ theme: e.target.value as S['theme'] })} aria-label="Giao diện">
                 <option value="system">Theo hệ thống</option>
-                <option value="light">Sáng</option>
-                <option value="dark">Tối</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
               </select>
             </label>
             <label className="check">
               <span className="row-main">
-                <span>Hiệu ứng chuyển động</span>
-                {setup.systemReducedMotion && <span className="muted small">macOS đang bật Giảm chuyển động, nên “Theo hệ thống” giữ hiệu ứng ở mức tối thiểu.</span>}
+                <span>Animation</span>
+                {setup.systemReducedMotion && <span className="muted small">macOS đang bật Reduce motion, nên “Theo hệ thống” giữ animation ở mức tối thiểu.</span>}
               </span>
-              <select className="select" value={settings.motion} onChange={(e) => update({ motion: e.target.value as S['motion'] })} aria-label="Hiệu ứng chuyển động">
+              <select className="select" value={settings.motion} onChange={(e) => update({ motion: e.target.value as S['motion'] })} aria-label="Animation">
                 <option value="system">Theo hệ thống</option>
                 <option value="full">Luôn đầy đủ</option>
               </select>
@@ -65,7 +65,7 @@ export function Settings({ state, setState }: Props) {
         <section aria-labelledby="data-title">
           <h2 id="data-title" className="section-title">Dữ liệu</h2>
           <div className="card row" style={{ gap: 20 }}>
-            <p className="row-main muted">Lịch sử, từ điển và cài đặt chỉ nằm trên máy này. macOS mã hoá khoá API của bạn trong Keychain.</p>
+            <p className="row-main muted">Lịch sử, từ điển và cài đặt chỉ lưu local. {mac ? 'API key được mã hoá trong macOS Keychain.' : 'API key được mã hoá bằng DPAPI của Windows.'}</p>
             <button className="btn" onClick={() => void window.spark.openDataFolder()}>
               Mở thư mục
             </button>
@@ -86,9 +86,9 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 const GLOBE_ACTION: Partial<Record<AppState['setup']['globeKey'], string>> = {
-  'input-source': 'đổi bộ gõ',
-  emoji: 'mở bảng emoji',
-  dictation: 'bật Đọc chính tả của Apple',
+  'input-source': 'đổi input source',
+  emoji: 'mở Emoji & Symbols',
+  dictation: 'bật Dictation của Apple',
 }
 
 function ShortcutSection({ state, update }: { state: AppState; update: (p: Partial<S>) => void }) {
@@ -118,7 +118,7 @@ function ShortcutSection({ state, update }: { state: AppState; update: (p: Parti
 
   return (
     <section aria-labelledby="shortcut-title">
-      <h2 id="shortcut-title" className="section-title">Phím tắt</h2>
+      <h2 id="shortcut-title" className="section-title">Hotkey</h2>
       <div className="card list">
         <div className="row">
           <div className="row-main">
@@ -127,8 +127,8 @@ function ShortcutSection({ state, update }: { state: AppState; update: (p: Parti
             </label>
             <span className="muted small">
               {needsAccess && holdValue !== 'off'
-                ? 'Cần bật Tự dán (Trợ năng) ở Trang chủ.'
-                : 'Giữ phím trong lúc nói, thả ra là dán. Nhấn đúp, hoặc nhấn cùng Space, để nói rảnh tay.'}
+                ? 'Cần bật Accessibility ở Trang chủ.'
+                : 'Giữ phím trong lúc nói, thả ra là paste. Nhấn đúp, hoặc nhấn cùng Space, để chuyển sang hands-free.'}
             </span>
           </div>
           <select
@@ -150,18 +150,18 @@ function ShortcutSection({ state, update }: { state: AppState; update: (p: Parti
             <div className="row-main">
               <span className="row-title">Phím fn của macOS</span>
               <span className="muted small">
-                Khi bạn nhấn riêng fn, macOS cũng {GLOBE_ACTION[setup.globeKey] ?? 'làm việc khác'}. Nếu thấy vướng, chọn “Nhấn phím 🌐 để” là Không làm gì
+                Khi bạn nhấn riêng fn, macOS cũng {GLOBE_ACTION[setup.globeKey] ?? 'làm việc khác'}. Nếu thấy vướng, vào System Settings → Keyboard, chọn “Press 🌐 key to” là “Do Nothing”
                 {setup.globeKey === 'input-source' ? ', rồi đổi Telex/ABC bằng ⌃Space.' : '.'}
               </span>
             </div>
             <button className="btn" onClick={() => void window.spark.openKeyboardSettings()}>
-              Mở Bàn phím
+              Mở Keyboard Settings
             </button>
           </div>
         )}
         <div className="row">
           <div className="row-main">
-            <span className="row-title">Phím rảnh tay</span>
+            <span className="row-title">Hotkey hands-free</span>
             <span className="muted small">{recording ? 'Nhấn tổ hợp phím mới. Esc để huỷ.' : 'Nhấn một lần để bắt đầu, nhấn lần nữa để xong.'}</span>
           </div>
           {recording ? <span className="kbd" style={{ minWidth: 120 }}>…</span> : <Keys accelerator={settings.shortcut} platform={setup.platform} />}
@@ -190,18 +190,18 @@ function MicSection({ deviceId, update }: { deviceId: string; update: (p: Partia
   const missing = deviceId !== 'default' && mics.length > 0 && !mics.some((m) => m.deviceId === deviceId)
   return (
     <section aria-labelledby="mic-title">
-      <h2 id="mic-title" className="section-title">Micro</h2>
+      <h2 id="mic-title" className="section-title">Microphone</h2>
       <div className="card card-pad field">
-        <label htmlFor="mic">Thu từ</label>
+        <label htmlFor="mic">Input</label>
         <select id="mic" className="select" value={missing ? 'default' : deviceId} onChange={(e) => update({ micDeviceId: e.target.value })} style={{ maxWidth: 360 }}>
           <option value="default">Theo hệ thống</option>
           {mics.map((m, i) => (
             <option key={m.deviceId} value={m.deviceId}>
-              {m.label || `Micro ${i + 1}`}
+              {m.label || `Microphone ${i + 1}`}
             </option>
           ))}
         </select>
-        {missing && <span className="muted small">Micro bạn chọn đang không cắm, Spark dùng micro của hệ thống.</span>}
+        {missing && <span className="muted small">Microphone bạn chọn đang không cắm, Spark dùng microphone mặc định của hệ thống.</span>}
       </div>
     </section>
   )
@@ -210,8 +210,8 @@ function MicSection({ deviceId, update }: { deviceId: string; update: (p: Partia
 function LocalModelPanel({ state, setState }: Props) {
   const { localModel: m, claude } = state.setup
   const gb = (m.sizeMb / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })
-  const fallback = claude.configured ? 'Claude' : 'cách dọn cơ bản'
-  const backup = claude.configured ? 'Khi kết quả có vẻ sai, Spark nhờ Claude làm lại.' : 'Khi kết quả có vẻ sai, Spark dọn cơ bản. Thêm khoá Claude để Claude làm lại thay.'
+  const fallback = claude.configured ? 'Claude' : 'basic cleanup'
+  const backup = claude.configured ? 'Khi output có vẻ sai, Spark fallback sang Claude.' : 'Khi output có vẻ sai, Spark fallback sang basic cleanup. Thêm Anthropic API key để fallback sang Claude.'
   return (
     <div className="card-pad" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       {m.state === 'ready' && <span>Sẵn sàng. {backup}</span>}
@@ -256,23 +256,23 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
 
   return (
     <section aria-labelledby="cleanup-title">
-      <h2 id="cleanup-title" className="section-title">Dọn chữ</h2>
+      <h2 id="cleanup-title" className="section-title">Cleanup</h2>
       <div className="card list">
         <label className="choice">
           <input type="radio" name="cleanup" checked={settings.cleanup === 'claude'} onChange={() => update({ cleanup: 'claude' })} />
           <div className="row-main">
             <span className="row-title">Claude</span>
             <span className="muted small">
-              Viết lại thành chữ hoàn chỉnh: dấu câu, chữ số, danh sách, tên riêng, bỏ từ đệm, đúng giọng ứng dụng bạn đang dùng. Spark gửi chữ (không gửi âm thanh) sang Anthropic. Mất khoảng 1 giây.
+              Viết lại transcript thành text hoàn chỉnh: dấu câu, chữ số, danh sách, tên riêng, bỏ từ đệm, đúng giọng của app bạn đang dùng. Spark chỉ gửi text (không gửi audio) tới Anthropic API. Mất khoảng 1 giây.
             </span>
           </div>
         </label>
         <label className="choice">
           <input type="radio" name="cleanup" checked={settings.cleanup === 'local'} onChange={() => update({ cleanup: 'local' })} />
           <div className="row-main">
-            <span className="row-title">Trên máy</span>
+            <span className="row-title">Gemma 4 (local)</span>
             <span className="muted small">
-              Gemma 4 dọn chữ ngay trên Mac: miễn phí, riêng tư, không cần mạng, khoảng nửa giây. Gemma sai nhiều hơn Claude nên Spark kiểm tra từng kết quả trước khi gõ. Cần tải {(setup.localModel.sizeMb / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} GB và chiếm khoảng 2 GB bộ nhớ khi Spark chạy.
+              LLM chạy local ngay trên Mac: miễn phí, riêng tư, chạy offline, khoảng nửa giây. Gemma sai nhiều hơn Claude nên Spark kiểm tra từng output trước khi paste. Cần tải {(setup.localModel.sizeMb / 1000).toLocaleString('vi-VN', { maximumFractionDigits: 1 })} GB và chiếm khoảng 2 GB RAM khi Spark chạy.
             </span>
           </div>
         </label>
@@ -280,8 +280,8 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
         <label className="choice">
           <input type="radio" name="cleanup" checked={settings.cleanup === 'basic'} onChange={() => update({ cleanup: 'basic' })} />
           <div className="row-main">
-            <span className="row-title">Cơ bản</span>
-            <span className="muted small">Không cần mạng, xong ngay. Bỏ ờ, ừm, sửa từ theo từ điển, viết hoa đầu câu và thêm dấu chấm. Không thêm dấu phẩy hay chữ số.</span>
+            <span className="row-title">Basic</span>
+            <span className="muted small">Không dùng LLM, xong ngay. Bỏ ờ, ừm, sửa từ theo từ điển, viết hoa đầu câu và thêm dấu chấm. Không thêm dấu phẩy hay chữ số.</span>
           </div>
         </label>
 
@@ -292,7 +292,7 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
         {settings.cleanup === 'claude' && (
           <div className="card-pad" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="field">
-              <label htmlFor="model">Mô hình</label>
+              <label htmlFor="model">Model</label>
               <select id="model" className="select" value={settings.claudeModel} onChange={(e) => update({ claudeModel: e.target.value as ClaudeModel })} style={{ maxWidth: 360 }}>
                 {(Object.keys(MODEL_NOTE) as ClaudeModel[]).map((m) => (
                   <option key={m} value={m}>
@@ -305,17 +305,17 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
             <div className="field">
               <label htmlFor="style">Giọng viết</label>
               <select id="style" className="select" value={settings.style} onChange={(e) => update({ style: e.target.value as Style })} style={{ maxWidth: 360 }}>
-                <option value="auto">Theo ứng dụng (thân mật khi nhắn tin, trang trọng khi viết email)</option>
+                <option value="auto">Theo app (thân mật khi chat, trang trọng khi viết email)</option>
                 <option value="casual">Luôn thân mật</option>
                 <option value="formal">Luôn trang trọng</option>
               </select>
             </div>
 
             <div className="field">
-              <label htmlFor="apikey">Khoá API</label>
+              <label htmlFor="apikey">API key</label>
               {setup.claude.source === 'saved' ? (
                 <div className="inline">
-                  <span>Đã lưu khoá {setup.claude.keyHint}</span>
+                  <span>Đã lưu API key {setup.claude.keyHint}</span>
                   <button className="btn sm" onClick={() => void runTest()} disabled={test === 'running'}>
                     Kiểm tra
                   </button>
@@ -325,7 +325,7 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
                 </div>
               ) : (
                 <>
-                  {setup.claude.source === 'env' && <span className="muted small">Spark đang dùng ANTHROPIC_API_KEY trong máy. Dán khoá khác vào dưới đây nếu muốn đổi.</span>}
+                  {setup.claude.source === 'env' && <span className="muted small">Spark đang dùng ANTHROPIC_API_KEY trong env. Muốn đổi thì paste key khác vào đây.</span>}
                   <div className="inline">
                     <input
                       id="apikey"
@@ -343,7 +343,7 @@ function CleanupSection({ state, setState, update }: Props & { update: (p: Parti
                     </button>
                   </div>
                   <span className="muted small">
-                    Lấy khoá ở{' '}
+                    Lấy API key ở{' '}
                     <button className="link" onClick={() => void window.spark.openUrl('https://console.anthropic.com/settings/keys')}>
                       console.anthropic.com
                     </button>

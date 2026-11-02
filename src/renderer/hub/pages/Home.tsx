@@ -27,16 +27,16 @@ function SetupList({ state, setState, go }: Props) {
   const primary = (id: string) => (blocking[0] === id ? 'btn primary' : 'btn')
   const { model, mic, accessibility, claude } = setup
   // In development the permission belongs to the Electron binary, not to Spark.
-  const devName = mac && import.meta.env.DEV ? ' (hiện là “Electron” khi đang phát triển)' : ''
-  const fallback = claude.configured ? 'Claude' : 'cách dọn cơ bản'
+  const devName = mac && import.meta.env.DEV ? ' (khi chạy dev là “Electron”)' : ''
+  const fallback = claude.configured ? 'Claude' : 'basic cleanup'
 
   return (
     <div className="card list">
-      {model.state === 'ready' && <SetupRow tone="ok" title="Nhận giọng nói">Sẵn sàng. Máy tự nhận tiếng Việt, không cần mạng.</SetupRow>}
+      {model.state === 'ready' && <SetupRow tone="ok" title="Model STT">Sẵn sàng. STT tiếng Việt chạy on-device, không cần mạng.</SetupRow>}
       {model.state === 'downloading' && (
         <SetupRow
           tone="todo"
-          title="Nhận giọng nói"
+          title="Model STT"
           action={
             <div className="progress" role="progressbar" aria-valuenow={Math.round(model.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
               <div style={{ width: `${model.progress * 100}%` }} />
@@ -49,40 +49,42 @@ function SetupList({ state, setState, go }: Props) {
       {(model.state === 'missing' || model.state === 'error') && (
         <SetupRow
           tone={model.state === 'error' ? 'bad' : 'todo'}
-          title="Nhận giọng nói"
+          title="Model STT"
           action={
             <button className={primary('model')} onClick={() => void window.spark.downloadModel().then(setState)}>
               {model.state === 'error' ? 'Thử lại' : `Tải về · ${model.sizeMb} MB`}
             </button>
           }
         >
-          {model.state === 'error' ? model.error : 'Spark cần bộ nhận tiếng Việt. Tải một lần, sau đó chạy không cần mạng.'}
+          {model.state === 'error' ? model.error : 'Spark cần model STT tiếng Việt. Tải một lần, sau đó chạy offline.'}
         </SetupRow>
       )}
 
-      {mic === 'granted' && <SetupRow tone="ok" title="Micro">Đã cho phép.</SetupRow>}
+      {mic === 'granted' && <SetupRow tone="ok" title="Microphone">Đã cho phép.</SetupRow>}
       {mic === 'not-determined' && (
-        <SetupRow tone="todo" title="Micro" action={<button className="btn" onClick={() => void window.spark.requestMic().then(setState)}>Cho phép</button>}>
+        <SetupRow tone="todo" title="Microphone" action={<button className="btn" onClick={() => void window.spark.requestMic().then(setState)}>Cho phép</button>}>
           macOS sẽ hỏi bạn một lần.
         </SetupRow>
       )}
       {mic === 'denied' && (
-        <SetupRow tone="bad" title="Micro" action={<button className={primary('mic')} onClick={() => void window.spark.openMicSettings()}>Mở Cài đặt</button>}>
-          macOS đang chặn micro. Bật Spark{devName} trong mục Micro rồi quay lại đây.
+        <SetupRow tone="bad" title="Microphone" action={<button className={primary('mic')} onClick={() => void window.spark.openMicSettings()}>{mac ? 'Mở System Settings' : 'Mở Settings'}</button>}>
+          {mac
+            ? `macOS đang chặn microphone. Bật Spark${devName} trong System Settings → Privacy & Security → Microphone rồi quay lại đây.`
+            : 'Windows đang chặn microphone. Vào Settings → Privacy & security → Microphone, bật “Let desktop apps access your microphone” rồi quay lại đây.'}
         </SetupRow>
       )}
 
-      {mac && accessibility === 'granted' && <SetupRow tone="ok" title="Tự dán">Đã bật. Chữ vào thẳng ứng dụng bạn đang dùng.</SetupRow>}
+      {mac && accessibility === 'granted' && <SetupRow tone="ok" title="Accessibility">Đã bật. Spark paste text thẳng vào ô đang focus.</SetupRow>}
       {mac && accessibility !== 'granted' && (
-        <SetupRow tone="todo" title="Tự dán" action={<button className="btn" onClick={() => void window.spark.requestAccessibility().then(setState)}>Bật</button>}>
-          Chưa bật thì Spark chỉ copy chữ, bạn tự nhấn ⌘V. Bật Spark{devName} trong mục Trợ năng.
+        <SetupRow tone="todo" title="Accessibility" action={<button className="btn" onClick={() => void window.spark.requestAccessibility().then(setState)}>Bật</button>}>
+          {`Chưa bật thì Spark chỉ copy text vào clipboard, bạn tự nhấn ⌘V. Bật Spark${devName} trong System Settings → Privacy & Security → Accessibility.`}
         </SetupRow>
       )}
 
       {!setup.hotkey.ok && (
         <SetupRow
           tone="bad"
-          title="Phím tắt"
+          title="Hotkey"
           action={
             setup.hotkey.reason === 'permission' ? (
               <button className={primary('hotkey')} onClick={() => void window.spark.requestAccessibility().then(setState)}>
@@ -101,26 +103,26 @@ function SetupList({ state, setState, go }: Props) {
 
       {settings.cleanup === 'local' ? (
         setup.localModel.state === 'ready' ? (
-          <SetupRow tone="ok" title="Dọn chữ trên máy">
-            Đang dùng Gemma 4{claude.configured ? ', Claude dự phòng.' : '.'}
+          <SetupRow tone="ok" title="LLM cleanup">
+            Đang dùng Gemma 4 chạy local{claude.configured ? ', Claude làm fallback.' : '.'}
           </SetupRow>
         ) : (
-          <SetupRow tone="todo" title="Dọn chữ trên máy" action={<button className="btn" onClick={() => go('settings')}>{setup.localModel.state === 'downloading' ? 'Xem' : 'Tải về'}</button>}>
+          <SetupRow tone="todo" title="LLM cleanup" action={<button className="btn" onClick={() => go('settings')}>{setup.localModel.state === 'downloading' ? 'Xem' : 'Tải về'}</button>}>
             {setup.localModel.state === 'downloading' ? `Đang tải Gemma 4… ${Math.round(setup.localModel.progress * 100)}%.` : 'Chưa tải Gemma 4.'} Trong lúc chờ, Spark dùng {fallback}.
           </SetupRow>
         )
       ) : settings.cleanup === 'basic' ? (
-        <SetupRow tone="off" title="Dọn chữ bằng Claude" action={<button className="btn" onClick={() => go('settings')}>Bật</button>}>
-          Đang tắt. Spark chỉ dọn cơ bản.
+        <SetupRow tone="off" title="LLM cleanup" action={<button className="btn" onClick={() => go('settings')}>Bật</button>}>
+          Đang tắt. Spark chỉ dùng basic cleanup.
         </SetupRow>
       ) : claude.configured ? (
-        <SetupRow tone="ok" title="Dọn chữ bằng Claude">
+        <SetupRow tone="ok" title="LLM cleanup">
           Đang dùng {MODEL_LABEL[settings.claudeModel]}
-          {claude.source === 'env' ? ', khoá lấy từ ANTHROPIC_API_KEY.' : `, khoá ${claude.keyHint}.`}
+          {claude.source === 'env' ? ', API key lấy từ ANTHROPIC_API_KEY.' : `, API key ${claude.keyHint}.`}
         </SetupRow>
       ) : (
-        <SetupRow tone="off" title="Dọn chữ bằng Claude" action={<button className="btn" onClick={() => go('settings', 'apikey')}>Thêm khoá API</button>}>
-          Claude thêm dấu câu, chữ số, danh sách và sửa tên riêng. Chưa có khoá thì {setup.localModel.state === 'ready' ? 'Gemma 4 trên máy dọn thay' : 'Spark chỉ dọn cơ bản'}.
+        <SetupRow tone="off" title="LLM cleanup" action={<button className="btn" onClick={() => go('settings', 'apikey')}>Thêm API key</button>}>
+          Claude thêm dấu câu, chữ số, danh sách và sửa tên riêng. Chưa có API key thì Spark {setup.localModel.state === 'ready' ? 'dùng Gemma 4 chạy local' : 'chỉ dùng basic cleanup'}.
         </SetupRow>
       )}
     </div>

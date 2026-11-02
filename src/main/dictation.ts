@@ -219,7 +219,7 @@ export function initDictation(d: Deps): void {
     }
   })
   ipcMain.on('overlay:mic-error', (_e, message: string) => {
-    if (phase === 'recording') fail(`Micro gặp lỗi: ${message}`, true)
+    if (phase === 'recording') fail(`Microphone bị lỗi: ${message}`, true)
   })
 }
 
@@ -227,12 +227,12 @@ export function initDictation(d: Deps): void {
 export function start(opts: { quiet?: boolean } = {}): void {
   if (phase === 'recording' || phase === 'transcribing' || phase === 'cleaning') return
   clearTimeout(hideTimer)
-  if (modelStatus().state !== 'ready') return fail('Chưa tải bộ nhận giọng. Mở Spark để thiết lập.', true)
+  if (modelStatus().state !== 'ready') return fail('Chưa tải model STT. Mở Spark để thiết lập.', true)
   if (micStatus() === 'not-determined') {
     void requestMic()
-    return fail('Cho phép micro rồi thử lại.')
+    return fail('Cho phép Spark dùng microphone rồi thử lại.')
   }
-  if (micStatus() === 'denied') return fail('macOS đang chặn micro. Mở Spark để cho phép.', true)
+  if (micStatus() === 'denied') return fail(`${process.platform === 'darwin' ? 'macOS' : 'Windows'} đang chặn microphone. Mở Spark để cho phép.`, true)
 
   const s = getSettings()
   void warmUp()
@@ -299,7 +299,7 @@ export async function stop(): Promise<void> {
     const audio = await new Promise<RecordedAudio>((resolve, reject) => {
       pendingAudio = resolve
       send({ type: 'stop' })
-      setTimeout(() => reject(new Error('Micro không gửi âm thanh về.')), 5000)
+      setTimeout(() => reject(new Error('Microphone không gửi audio về.')), 5000)
     })
     awaitingFlush = false
     const durationSec = audio.samples.length / audio.sampleRate
@@ -310,7 +310,7 @@ export async function stop(): Promise<void> {
     const t0 = Date.now()
     const { text: raw, english } = await transcribe(audio.samples, audio.sampleRate)
     const sttMs = Date.now() - t0
-    if (words(raw).length === 0) return fail('Không nghe rõ. Thử nói gần micro hơn.')
+    if (words(raw).length === 0) return fail('Không nghe rõ. Thử nói gần microphone hơn.')
 
     setPhase('cleaning')
     const s = getSettings()
@@ -321,7 +321,7 @@ export async function stop(): Promise<void> {
     const usedEarly = started.has(words(raw).join(' '))
     let result = await cleanFor(raw, english)
     result ??= await cleanText(raw, { mode: s.cleanup, key: loadApiKey().key, model: s.claudeModel, style: s.style, polish: s.polish, app, dict, english })
-    if (!result.text) return fail('Chỉ nghe thấy ờ, ừm nên không có gì để gõ.')
+    if (!result.text) return fail('Chỉ nghe thấy ờ, ừm nên không có gì để paste.')
 
     const inserted = await insertText(result.text, clipboardBefore)
     const latencyMs = Date.now() - released
@@ -354,7 +354,7 @@ export async function stop(): Promise<void> {
 
     const fellBack = s.cleanup !== 'basic' && result.cleanedBy === 'basic'
     // A plain paste needs no words (the bubble flashes green); say something only when it matters.
-    const message = inserted === 'paste' ? (fellBack ? 'Đã dán, chỉ dọn cơ bản' : undefined) : `Đã copy · nhấn ${paste} để dán`
+    const message = inserted === 'paste' ? (fellBack ? 'Đã paste · basic cleanup' : undefined) : `Đã copy · nhấn ${paste} để paste`
     setPhase('done', { message })
     hideLater(inserted === 'paste' ? (message ? 2200 : 1000) : 3200)
   } catch (e) {

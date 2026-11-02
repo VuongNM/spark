@@ -41,7 +41,7 @@ export function Dictionary() {
       <div className="content fade-in">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h1 className="page-title">Từ điển</h1>
-          <p className="lede">Tên riêng, thương hiệu, thuật ngữ mà Spark phải viết đúng như bạn muốn.</p>
+          <p className="lede">Tên riêng, tên project, thuật ngữ mà Spark phải viết đúng. Các từ này cũng được dùng làm hotwords cho STT.</p>
         </div>
 
         <form className="card card-pad" onSubmit={(e) => void add(e)} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -70,7 +70,7 @@ export function Dictionary() {
         </form>
 
         {entries.length === 0 ? (
-          <p className="empty">Thử thêm tên bạn, tên công ty, hay sản phẩm bạn hay nhắc tới.</p>
+          <p className="empty">Thử thêm tên bạn, tên công ty, tên project hay sản phẩm bạn hay nhắc tới.</p>
         ) : (
           <div className="card list">
             {entries.map((e) => (

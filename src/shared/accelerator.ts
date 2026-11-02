@@ -19,9 +19,9 @@ export function holdKeyLabel(key: HoldKey, platform: string): string {
   const mac = platform === 'darwin'
   const labels: Record<HoldKey, [string, string]> = {
     Fn: ['fn', 'Fn'],
-    AltRight: ['⌥ Option phải', 'Alt phải'],
-    MetaRight: ['⌘ Command phải', 'phím Windows phải'],
-    CtrlRight: ['⌃ Control phải', 'Ctrl phải'],
+    AltRight: ['Right ⌥ Option', 'Right Alt'],
+    MetaRight: ['Right ⌘ Command', 'Right Windows'],
+    CtrlRight: ['Right ⌃ Control', 'Right Ctrl'],
   }
   return labels[key][mac ? 0 : 1]
 }

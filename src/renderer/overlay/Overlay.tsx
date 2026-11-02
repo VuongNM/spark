@@ -127,8 +127,8 @@ export function Overlay() {
   // While talking (and while Spark writes) the bubble shows the words heard so far; otherwise words
   // appear only when there is something to read or do.
   const streaming = (mode === 'listening' || mode === 'working') && !!partial
-  const text = streaming ? partial : view.phase === 'recording' ? (view.handsFree ? 'Rảnh tay' : undefined) : view.phase === 'done' || view.phase === 'error' ? view.message : undefined
-  const spoken = { waiting: 'Đang mở micro', listening: 'Đang nghe', working: 'Đang viết', done: 'Xong', error: 'Có lỗi' }[mode]
+  const text = streaming ? partial : view.phase === 'recording' ? (view.handsFree ? 'Hands-free' : undefined) : view.phase === 'done' || view.phase === 'error' ? view.message : undefined
+  const spoken = { waiting: 'Đang mở microphone', listening: 'Đang nghe', working: 'Đang viết', done: 'Xong', error: 'Có lỗi' }[mode]
 
   return (
     <div className={`pill ${mode}${text ? ' with-text' : ''}${streaming ? ' streaming' : ''}`} role="status" aria-live="polite" aria-label={streaming ? spoken : (text ?? spoken)}>

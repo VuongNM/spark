@@ -42,25 +42,25 @@ export function SheetHead({ left, right }: { left?: ReactNode; right?: ReactNode
 }
 
 const FALLBACK: Record<FallbackReason, string> = {
-  'no-key': 'chưa có khoá Claude',
-  'bad-key': 'khoá Claude bị từ chối',
+  'no-key': 'chưa có API key',
+  'bad-key': 'API key bị từ chối',
   offline: 'không gọi được Claude',
   diverged: 'Claude sửa quá tay',
   refused: 'Claude từ chối',
-  error: 'Claude bị lỗi',
-  'local-loading': 'model trên máy chưa tải xong',
-  'local-rejected': 'kết quả trên máy chưa đạt',
-  'local-error': 'model trên máy bị lỗi',
+  error: 'Claude API lỗi',
+  'local-loading': 'model local chưa load xong',
+  'local-rejected': 'output của Gemma bị loại',
+  'local-error': 'model local bị lỗi',
 }
 
-const CLEANED_BY: Record<HistoryEntry['cleanedBy'], string> = { claude: 'Claude', local: 'Trên máy', basic: 'Dọn cơ bản' }
+const CLEANED_BY: Record<HistoryEntry['cleanedBy'], string> = { claude: 'Claude', local: 'Gemma 4 (local)', basic: 'Basic cleanup' }
 
 export function Entry({ entry, showRaw, details, actions, index = 0 }: { entry: HistoryEntry; showRaw?: boolean; details?: boolean; actions: ReactNode; index?: number }) {
   return (
     <article className="entry" style={{ '--i': Math.min(index, 8) } as React.CSSProperties}>
       <div className="entry-foot">
         <div className="eyebrow">
-          <span>{entry.app || 'Không rõ ứng dụng'}</span>
+          <span>{entry.app || 'Không rõ app'}</span>
           <span aria-hidden>·</span>
           <span>{timeAgo(entry.createdAt)}</span>
           {details && (
@@ -73,12 +73,12 @@ export function Entry({ entry, showRaw, details, actions, index = 0 }: { entry: 
         <div className="entry-actions">{actions}</div>
       </div>
       <p className="prose">{entry.text}</p>
-      {showRaw && <p className="entry-raw">Nghe được: {entry.raw}</p>}
+      {showRaw && <p className="entry-raw">Transcript: {entry.raw}</p>}
       {details && (
         <div className="entry-foot">
           <span className="tag">{CLEANED_BY[entry.cleanedBy]}</span>
           {entry.fallbackReason && <span className="tag warn">{FALLBACK[entry.fallbackReason]}</span>}
-          {entry.inserted === 'clipboard' && <span className="tag">mới copy, chưa dán</span>}
+          {entry.inserted === 'clipboard' && <span className="tag">mới copy, chưa paste</span>}
         </div>
       )}
     </article>

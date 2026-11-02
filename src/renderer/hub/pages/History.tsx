@@ -46,11 +46,11 @@ export function History({ state }: { state: AppState }) {
       <div className="content fade-in">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <h1 className="page-title">Lịch sử</h1>
-          <p className="lede">Mới nhất ở trên. Spark chỉ lưu trên máy này.</p>
+          <p className="lede">Mới nhất ở trên. Spark chỉ lưu local.</p>
         </div>
 
         {items?.length === 0 ? (
-          <p className="empty">{query ? 'Không tìm thấy gì.' : `Chưa có gì. ${how} ở bất kỳ ứng dụng nào.`}</p>
+          <p className="empty">{query ? 'Không tìm thấy gì.' : `Chưa có gì. ${how} ở bất kỳ app nào.`}</p>
         ) : (
           <div className="entries">
             {items?.map((e, i) => (
@@ -72,7 +72,7 @@ export function History({ state }: { state: AppState }) {
                       Copy
                     </button>
                     <button className="btn ghost sm" aria-expanded={open.has(e.id)} onClick={() => toggleRaw(e.id)}>
-                      {open.has(e.id) ? 'Ẩn bản gốc' : 'Bản gốc'}
+                      {open.has(e.id) ? 'Ẩn transcript' : 'Transcript'}
                     </button>
                     <button className="btn ghost sm" onClick={() => void remove(e)}>
                       Xoá

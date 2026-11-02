@@ -33,7 +33,7 @@ mac:
     - from: resources/bin
       to: bin
   extendInfo:
-    NSMicrophoneUsageDescription: Spark chỉ nghe khi bạn giữ phím đọc, rồi chuyển lời bạn nói thành chữ.
+    NSMicrophoneUsageDescription: Spark chỉ dùng microphone khi bạn giữ hotkey. Audio được chuyển thành text ngay trên máy, không gửi đi đâu.
 win:
   target:
     - target: nsis

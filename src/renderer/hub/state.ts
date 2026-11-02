@@ -31,6 +31,6 @@ export function timeAgo(ts: number): string {
   return today ? d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })
 }
 
-/** The key you hold to dictate, as printed on the keyboard ("fn", "⌥ Option phải"…). */
+/** The key you hold to dictate, as printed on the keyboard ("fn", "Right ⌥ Option"…). */
 export const triggerKey = (settings: Settings, platform: string): string =>
   settings.holdKey === 'Fn' && platform === 'darwin' ? 'fn' : holdKeyLabel(settings.holdKey, platform)

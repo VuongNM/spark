@@ -96,14 +96,14 @@ async function fetchSpec(spec: ModelSpec, onBytes: (n: number) => void): Promise
       continue
     }
     const res = await fetch(`${spec.repo}/${f.name}`)
-    if (!res.ok || !res.body) throw new Error(`Tải ${f.name} thất bại (mã ${res.status}). Thử lại.`)
+    if (!res.ok || !res.body) throw new Error(`Tải ${f.name} thất bại (HTTP ${res.status}). Thử lại.`)
     const part = `${dest}.part`
     const body = Readable.fromWeb(res.body as import('node:stream/web').ReadableStream)
     body.on('data', (chunk: Buffer) => onBytes(chunk.length))
     await pipeline(body, createWriteStream(part))
     if ((await sha256(part)) !== f.sha256) {
       rmSync(part, { force: true })
-      throw new Error(`${f.name} tải về bị hỏng. Thử lại.`)
+      throw new Error(`${f.name} tải về bị hỏng (sai SHA-256). Thử lại.`)
     }
     renameSync(part, dest)
   }

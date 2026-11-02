@@ -159,7 +159,7 @@ export async function testKey(key: string, model: ClaudeModel): Promise<{ ok: bo
   } catch (e) {
     const reason = e instanceof CleanupError ? e.reason : 'error'
     const message =
-      reason === 'bad-key' ? 'Anthropic từ chối khoá này. Copy lại khoá ở console.anthropic.com.' : reason === 'offline' ? 'Không gọi được Claude. Kiểm tra mạng.' : e instanceof Error ? e.message : String(e)
+      reason === 'bad-key' ? 'Anthropic từ chối API key này. Copy lại key ở console.anthropic.com.' : reason === 'offline' ? 'Không gọi được Claude API. Kiểm tra mạng.' : e instanceof Error ? e.message : String(e)
     return { ok: false, message }
   }
 }
