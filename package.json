@@ -1,7 +1,7 @@
 {
   "name": "spark",
   "productName": "Spark",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Gõ bằng giọng nói tiếng Việt cho dân code: giữ fn, nói, thả ra là chữ được dán.",
   "author": "Vuong Nguyen",
   "license": "MIT",
