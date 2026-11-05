@@ -55,6 +55,18 @@ bash scripts/publish.sh "Release notes"          # tạo GitHub release v<versio
 
 Bản Mac được sign bằng self-signed certificate (chưa notarize với Apple), nên các permission đã cấp (TCC) được giữ qua các lần update. File tải bằng `curl` không bị gắn quarantine attribute. File `.dmg` tải bằng browser thì cần bấm "Open Anyway" trong System Settings → Privacy & Security một lần.
 
+## Model và license
+
+Code của Spark là MIT. Các model Spark dùng có license riêng. Spark tải chúng từ Hugging Face lúc bạn dùng, không đóng gói vào app:
+
+| Model | Dùng để | Nguồn | License |
+| --- | --- | --- | --- |
+| Zipformer-30M-RNNT-6000h | STT tiếng Việt | [hynt/Zipformer-30M-RNNT-6000h](https://huggingface.co/hynt/Zipformer-30M-RNNT-6000h), bản int8 ONNX của [csukuangfj](https://huggingface.co/csukuangfj2/sherpa-onnx-zipformer-vi-30M-int8-2026-02-09) | CC BY-NC-ND 4.0 (không dùng cho mục đích thương mại) |
+| Moonshine tiny | STT tiếng Anh | [csukuangfj2/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27](https://huggingface.co/csukuangfj2/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27) | xem trang model |
+| Gemma 4 E2B | LLM cleanup chạy local | [unsloth/gemma-4-E2B-it-GGUF](https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF) | Apache-2.0 |
+
+Runtime là [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) (Apache-2.0). File `resources/zipformer-vi-bpe.vocab` là danh sách token của model tiếng Việt, dùng cho hotwords.
+
 ## License
 
 MIT
