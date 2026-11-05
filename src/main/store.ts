@@ -33,8 +33,9 @@ interface SettingsFile extends Settings {
   version?: number
 }
 
-const SETTINGS_VERSION = 3
+const SETTINGS_VERSION = 4
 const platformHoldKey = process.platform === 'darwin' ? 'Fn' : 'CtrlRight'
+const firstRun = !existsSync(dataPath('settings.json'))
 
 let settingsFile: SettingsFile = { ...DEFAULT_SETTINGS, holdKey: platformHoldKey, ...readJson<Partial<SettingsFile>>('settings.json', {}) }
 const fromVersion = settingsFile.version ?? 1
@@ -42,6 +43,8 @@ const fromVersion = settingsFile.version ?? 1
 if (fromVersion < 2) settingsFile = { ...settingsFile, mode: 'hold', holdKey: platformHoldKey }
 // v3: Haiku 5.5 is the cleanup default (fast enough for push-to-talk); keeps any model the user picked.
 if (fromVersion < 3 && settingsFile.claudeModel === 'claude-opus-5-5') settingsFile = { ...settingsFile, claudeModel: 'claude-haiku-5-5' }
+// v4: the first-run tour is for new installs; people already using Spark skip it.
+if (fromVersion < 4 && !firstRun) settingsFile = { ...settingsFile, onboarded: true }
 if (fromVersion < SETTINGS_VERSION) {
   settingsFile = { ...settingsFile, version: SETTINGS_VERSION }
   writeJson('settings.json', settingsFile)

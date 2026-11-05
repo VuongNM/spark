@@ -325,6 +325,44 @@ async function runScreenshots(dir: string): Promise<void> {
     openHub()
     await new Promise<void>((r) => hub!.once('ready-to-show', () => r()))
     await wait(1500)
+    // The first-run tour, step by step. The practice step gets a real result from a TTS clip of the
+    // first sentence (Zipformer + Gemma), since screenshot mode never opens the microphone.
+    store.updateSettings({ onboarded: false, theme: 'light' })
+    nativeTheme.themeSource = 'light'
+    broadcast()
+    await wait(1600)
+    const next = () => hub!.webContents.executeJavaScript(`document.querySelector('.welcome-foot .end .btn:last-of-type').click()`)
+    await save(hub!, 'tour-1-hello')
+    await next()
+    await wait(1600)
+    await save(hub!, 'tour-2-setup')
+    await next()
+    await wait(1600)
+    await save(hub!, 'tour-3-try')
+    const tried: HistoryEntry = {
+      id: 'tour',
+      createdAt: Date.now(),
+      app: 'Spark',
+      durationSec: 5.9,
+      raw: 'Ờ CHIỀU NAY BA GIỜ MÌNH HỌP VỚI CẢ TEAM ỪM NHỚ MANG THEO MÁI TÍM NHÉ',
+      text: 'Chiều nay 3 giờ mình họp với cả team. Nhớ mang theo máy tính nhé.',
+      cleanedBy: 'local',
+      inserted: 'clipboard',
+      sttMs: 146,
+      cleanupMs: 1102,
+    }
+    hub!.webContents.send('history:new', tried)
+    await wait(1200)
+    await save(hub!, 'tour-3-try-done')
+    for (let i = 0; i < 3; i++) {
+      await next()
+      await wait(500)
+    }
+    await wait(1200)
+    await save(hub!, 'tour-4-tips')
+    store.updateSettings({ onboarded: true })
+    broadcast()
+    await wait(1500)
     for (const theme of ['light', 'dark'] as const) {
       store.updateSettings({ theme })
       nativeTheme.themeSource = theme

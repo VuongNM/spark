@@ -16,7 +16,7 @@ export function installMock(): void {
       ]
   let dict: DictEntry[] = fresh ? [] : [{ id: 'd1', word: 'Lawgical', heardAs: ['lô gi cồ'] }]
   let state: AppState = {
-    settings: { ...DEFAULT_SETTINGS },
+    settings: { ...DEFAULT_SETTINGS, onboarded: !fresh },
     phase: 'idle',
     setup: {
       platform: navigator.platform.toLowerCase().includes('win') ? 'win32' : 'darwin',
@@ -87,7 +87,10 @@ export function installMock(): void {
       if (state.phase !== 'recording') return void set({ phase: 'recording' })
       set({ phase: 'cleaning' })
       await new Promise((r) => setTimeout(r, 700))
-      const entry: HistoryEntry = { id: crypto.randomUUID(), createdAt: Date.now(), app: 'Spark', durationSec: 3.4, raw: 'XIN CHÀO MÌNH ĐANG THỬ SPARK', text: 'Xin chào, mình đang thử Spark.', cleanedBy: 'claude', inserted: 'clipboard', sttMs: 80, cleanupMs: 900 }
+      const said = document.querySelector('.sample blockquote')?.textContent
+      const text = said ? said.replace(/^Ờ, |ừm, /g, '').replace('ba giờ', '3 giờ') : 'Xin chào, mình đang thử Spark.'
+      const raw = (said ?? 'xin chào mình đang thử spark').replace(/[,.:]/g, '').toLocaleUpperCase('vi')
+      const entry: HistoryEntry = { id: crypto.randomUUID(), createdAt: Date.now(), app: 'Spark', durationSec: 3.4, raw, text, cleanedBy: state.setup.claude.configured ? 'claude' : 'basic', inserted: 'clipboard', sttMs: 80, cleanupMs: 900 }
       history = [entry, ...history]
       historyListeners.forEach((l) => l(entry))
       set({ phase: 'idle' })

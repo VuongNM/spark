@@ -53,7 +53,7 @@ const FALLBACK: Record<FallbackReason, string> = {
   'local-error': 'model local bị lỗi',
 }
 
-const CLEANED_BY: Record<HistoryEntry['cleanedBy'], string> = { claude: 'Claude', local: 'Gemma 4 (local)', basic: 'Basic cleanup' }
+export const CLEANED_BY: Record<HistoryEntry['cleanedBy'], string> = { claude: 'Claude', local: 'Gemma 4 (local)', basic: 'Basic cleanup' }
 
 export function Entry({ entry, showRaw, details, actions, index = 0 }: { entry: HistoryEntry; showRaw?: boolean; details?: boolean; actions: ReactNode; index?: number }) {
   return (

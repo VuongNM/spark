@@ -32,6 +32,12 @@ export function Settings({ state, setState }: Props) {
         <section aria-labelledby="general-title">
           <h2 id="general-title" className="section-title">Chung</h2>
           <div className="card list">
+            <div className="check">
+              <span>Hướng dẫn lúc mới cài: thiết lập, đọc thử vài câu và mấy mẹo nhỏ</span>
+              <button className="btn sm" onClick={() => update({ onboarded: false })}>
+                Xem lại
+              </button>
+            </div>
             <Toggle label="Phát tiếng báo khi bắt đầu và dừng thu" checked={settings.sounds} onChange={(v) => update({ sounds: v })} />
             <Toggle label="Lưu lịch sử trên máy này" checked={settings.keepHistory} onChange={(v) => update({ keepHistory: v })} />
             <Toggle label="Trả lại nội dung clipboard cũ sau khi paste" checked={settings.restoreClipboard} onChange={(v) => update({ restoreClipboard: v })} />
@@ -85,7 +91,7 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
   )
 }
 
-const GLOBE_ACTION: Partial<Record<AppState['setup']['globeKey'], string>> = {
+export const GLOBE_ACTION: Partial<Record<AppState['setup']['globeKey'], string>> = {
   'input-source': 'đổi input source',
   emoji: 'mở Emoji & Symbols',
   dictation: 'bật Dictation của Apple',

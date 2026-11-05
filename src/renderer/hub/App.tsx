@@ -6,6 +6,7 @@ import { Home } from './pages/Home'
 import { Settings } from './pages/Settings'
 import { blockers, type Page, useAppState } from './state'
 import { DotVeil } from './DotVeil'
+import { Welcome } from './Welcome'
 import { BookIcon, HistoryIcon, HomeIcon, Logo, SlidersIcon } from './icons'
 
 const PAGES: { id: Page; label: string; Icon: typeof HomeIcon }[] = [
@@ -55,7 +56,7 @@ export function App() {
     place()
     window.addEventListener('resize', place)
     return () => window.removeEventListener('resize', place)
-  }, [page, !!state])
+  }, [page, !!state, state?.settings.onboarded])
 
   useEffect(() => {
     if (!state) return
@@ -66,6 +67,17 @@ export function App() {
   }, [state?.setup.platform, state?.setup.glass, state?.settings.motion, state?.setup.systemReducedMotion])
 
   if (!state) return null
+  if (!state.settings.onboarded)
+    return (
+      <Welcome
+        state={state}
+        setState={setState}
+        done={(p) => {
+          setPage(p ?? 'home')
+          void window.spark.updateSettings({ onboarded: true }).then(setState)
+        }}
+      />
+    )
   const mac = state.setup.platform === 'darwin'
   const needsSetup = blockers(state.setup).length > 0
 

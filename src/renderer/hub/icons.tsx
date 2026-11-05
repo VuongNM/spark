@@ -103,3 +103,16 @@ export const CheckIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="m5 12.5 4.5 4.5L19 7.5" />
   </svg>
 )
+
+/** The menu bar / system tray glyph (same dots as trayIcon in src/main/windows.ts), in the current colour. */
+export function TrayGlyph({ size = 18 }: { size?: number }) {
+  const pitch = 30 / GRID
+  const dot = pitch * 0.78
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden fill="currentColor">
+      {LOGO_DOTS.filter((d) => d.lit).map(({ c, r }) => (
+        <rect key={`${c}-${r}`} x={1 + c * pitch + (pitch - dot) / 2} y={1 + r * pitch + (pitch - dot) / 2} width={dot} height={dot} rx={0.6} />
+      ))}
+    </svg>
+  )
+}

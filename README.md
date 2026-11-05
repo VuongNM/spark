@@ -12,6 +12,8 @@ curl -fsSL https://vuongnm.github.io/spark/install.sh | bash
 
 Chạy trên Mac Apple Silicon. Mỗi release có kèm bản Windows (giữ Right Ctrl để nói), hiện vẫn là beta.
 
+Lần đầu mở, Spark có một hướng dẫn ngắn: thiết lập permission và model, giữ fn đọc thử ba câu mẫu, rồi vài mẹo nhỏ. Muốn xem lại thì vào Cài đặt → Chung.
+
 ## Kiến trúc
 
 1. **STT.** Trong lúc bạn giữ phím, overlay window stream audio về main process. Cứ 300 ms, Spark decode lại 12 giây gần nhất bằng [Zipformer](https://github.com/k2-fsa/sherpa-onnx) tiếng Việt 30M params (sherpa-onnx, CPU), nên transcript hiện real-time. Hotwords giúp model viết đúng chính tả khoảng 30 từ tiếng Anh dân code hay dùng (commit, deploy, staging…) và các từ trong dictionary của bạn. Một model tiếng Anh nhỏ (Moonshine tiny) chạy song song để bắt những từ tiếng Anh mà model tiếng Việt không viết được.

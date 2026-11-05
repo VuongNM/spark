@@ -24,6 +24,8 @@ export interface Settings {
   motion: Motion
   theme: Theme
   keepRecordings: boolean
+  /** False until the first-run tour is finished or skipped; Settings can show it again. */
+  onboarded: boolean
 }
 
 export interface DictEntry {
@@ -126,4 +128,5 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',
   keepRecordings: false,
   polish: true,
+  onboarded: false,
 }
